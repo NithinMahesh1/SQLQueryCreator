@@ -1,36 +1,53 @@
 import pandas
 import os
-
-path = os.getcwd() + "\Width Lengths.xlsx"
-
-data = pandas.read_excel(path, sheet_name='Sheet1')
-
-# Gets certain columns 
-# test = data.iloc[0:3,0:5]
-# df_new=data.iloc[:data.loc[data.ItemType.str.contains('Finish',na=False)].index[0]]
-# firstColumn = data.iloc[0:,0:1]
+import sqlite3
 
 
-for index, row in data.iterrows():
-    itemtype = row['ItemType']
-    width = row['Width']
+def main():
+    reading()
 
-    if not (pandas.isnull(width)):
-        width = int(width)
 
-    # if not (pandas.isnull(itemtype) and pandas.isnull(width)):
+def reading():
+    path = os.getcwd() + "\Width Lengths.xlsx"
+    data = pandas.read_excel(path, sheet_name='Sheet1')
 
-    check1 = pandas.isnull(itemtype)
-    check2 = pandas.isnull(width)
+    itemtype = {}
+    for index, row in data.iterrows():
+        key = row['ItemType']
+        value = row['Width']
 
-    if check1 == True and check2 == True:
-        continue
+        if not (pandas.isnull(value)):
+            value = int(value)
 
-    if check1 == False and check2 == False:
-        concat = itemtype, width
+        check1 = pandas.isnull(key)
+        check2 = pandas.isnull(value)
 
-    if check1 == False and check2 == True:
-        concat = itemtype, width
- 
-    print(concat)
+        if check1 == True and check2 == True:
+            continue
 
+        if key == "Finish":
+            boolean = False
+            query(itemtype)
+            continue
+
+        concat = key, value
+
+        if check1 == False and check2 == True:
+            itemtype[key] = value
+            boolean = True
+           
+        if boolean == True:
+            itemtype[key] = value    
+
+
+        print(concat)
+        if(index == 790):
+            print(itemtype)
+    
+
+def query(itemtype):
+    print(itemtype)
+    itemtype.clear()
+
+
+main()
