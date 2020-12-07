@@ -145,10 +145,13 @@ def query(items,sheet2):
         
         if not widthLength == 0 and not propertyName == "":
             queryOldLengths = "UPDATE innovator.PROPERTY SET COLUMN_WIDTH=" + "'" +str(widthLength)+ "'" + " WHERE NAME=" + "'" +propertyName+ "'" +" AND SOURCE_ID=" + "'" +ID+ "'"
-            cursor.execute(queryOldLengths)
+            # cursor.execute(queryOldLengths)
 
-            for row in cursor:
-                print(row)
+            wks.cell(row=count, column=5).value = queryOldLengths
+            sheet2.save('Width Lengths.xlsx')
+
+            # for row in cursor:
+            #     print(row)
         
         
     
