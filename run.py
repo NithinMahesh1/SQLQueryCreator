@@ -145,9 +145,10 @@ def query(items,sheet2,num):
             for row in cursor:
                 row = str(row).split(",",1)
                 row = row[0].split("(",1)
-                if str(row[1]) == null:
+                if str(row[1]) == "None":
                     row = "null"
-                row = int(row[1])         
+                else:
+                    row = int(row[1])         
                 
                 if lastColumn == 1:
                     wks.cell(row=lastRow, column=1).value = itemtype
