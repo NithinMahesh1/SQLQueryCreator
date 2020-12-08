@@ -57,7 +57,7 @@ def query(items,sheet2,num):
 
     conn = pyodbc.connect('Driver={SQL Server};'
                       'Server=AND692557\SQLEXPRESS;'
-                      'Database=12_SP11;'
+                      'Database=12_SP11Test;'
                       'Trusted_Connection=yes;')
 
     cursor = conn.cursor()
@@ -71,8 +71,6 @@ def query(items,sheet2,num):
         # if key and value are not null then save properties
         if len(key) > 0 and not pandas.isnull(value):
             itemProperty.append(key)
-            # add name here
-            # propertyName = key
             itemProperty.append(value)  
 
         print(key,value)
@@ -92,49 +90,15 @@ def query(items,sheet2,num):
 
         print(ID)
 
-    count = 0
     wks = sheet2['Sheet2']
     lastRow = wks.max_row
-    # wks.cell(row=lastRow, column=1).value = itemtype
 
     # Query for old width lenghts and save those before running change query
     # SELECT COLUMN_WIDTH FROM innovator.PROPERTY WHERE name='property name' AND SOURCE_ID='the id we got'
     for properties in itemProperty:
-        lastRow = wks.max_row
-        # count = count + 1
-        # count = lastRow  
+        lastRow = wks.max_row  
         lastColumn = wks.max_column
         checkRowandColumn = False
-        print(lastColumn)
-        count = count + 1
-        size = len(itemProperty)
-        index = size/2
-        if size == 2:
-            queryOldLengths = "SELECT COLUMN_WIDTH FROM innovator.PROPERTY WHERE NAME=" + "'" +properties[0]+ "'" " AND SOURCE_ID=" +"'" +ID+ "'"
-            cursor.execute(queryOldLengths)
-
-            for row in cursor:
-                row = str(row).split(",",1)
-                row = row[0].split("(",1)
-                row = int(row[1])
-                wks = sheet2['Sheet2']
-                
-                if lastColumn == 1:
-                    wks.cell(row=lastRow, column=1).value = itemtype
-                    wks.cell(row=lastRow+2, column=1).value = row
-                    sheet2.save('Width Lengths.xlsx')
-                    checkRowandColumn = True
-                    # count = count - 1
-
-                if checkRowandColumn == False:
-                    wks.cell(row=lastRow+1, column=1).value = row
-                    sheet2.save('Width Lengths.xlsx')
-      
-                checkRowandColumn == False
-                print(row)
-
-        
-        # There are more than 1 property values
         
         if not isinstance(properties, int):
             propertyName = properties
@@ -161,44 +125,32 @@ def query(items,sheet2,num):
                     if num >= 2:
                         emptyRow = ""
                         wks.cell(row=lastRow+1, column=1).value = itemtype
-                        # wks.cell(row=lastRow+2, column=1).value = emptyRow
 
                     wks.cell(row=lastRow+1, column=2).value = properties
                     wks.cell(row=lastRow+1, column=4).value = row
                     sheet2.save('Width Lengths.xlsx')
-                    # lastRow = wks.max_row
-                # count = count - 1
+
+      
                 checkRowandColumn == False
-                print(row)
 
         widthLength = 0
         if isinstance(properties, int):
             widthLength = properties
         
         # UPDATE innovator.PROPERTY SET COLUMN_WIDTH='new int width' WHERE NAME='property name' AND SOURCE_ID='ID variable'
-        
+        # Setup second query using source ID and property values 
         if not widthLength == 0 and not propertyName == "":
             queryOldLengths = "UPDATE innovator.PROPERTY SET COLUMN_WIDTH=" + "'" +str(widthLength)+ "'" + " WHERE NAME=" + "'" +propertyName+ "'" +" AND SOURCE_ID=" + "'" +ID+ "'"
             # cursor.execute(queryOldLengths)
             
-            # if lastColumn == 1:
             wks.cell(row=lastRow, column=6).value = queryOldLengths
             sheet2.save('Width Lengths.xlsx')
             lastRow = wks.max_row
             checkRowandColumn = True
 
-            # if checkRowandColumn == False:
-            #     wks.cell(row=lastRow+1, column=6).value = queryOldLengths
-            #     sheet2.save('Width Lengths.xlsx')
-            #     lastRow = wks.max_row
-
             checkRowandColumn == False
-            # for row in cursor:
-            #     print(row)
-        
-        
-    
-    # Setup second query using source ID and property values 
+ 
+               
 
     items.clear()
 
