@@ -56,7 +56,7 @@ def reading():
 def query(items,sheet2,num):
 
     conn = pyodbc.connect('Driver={SQL Server};'
-                      'Server=AND692557\SQLEXPRESS;'
+                      'Server=\SQLEXPRESS;'
                       'Database=12_SP11Test;'
                       'Trusted_Connection=yes;')
 
@@ -105,6 +105,9 @@ def query(items,sheet2,num):
 
             queryOldLengths = "SELECT COLUMN_WIDTH FROM innovator.PROPERTY WHERE NAME=" + "'" +properties+ "'" " AND SOURCE_ID=" +"'" +ID+ "'"
             cursor.execute(queryOldLengths)
+            if cursor.rowcount == 0:
+                print("Error in " +propertyName)
+                # break
             
             for row in cursor:
                 row = str(row).split(",",1)
@@ -150,6 +153,7 @@ def query(items,sheet2,num):
 
             checkRowandColumn == False
  
+    print(num)
                
 
     items.clear()
