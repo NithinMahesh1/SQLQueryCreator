@@ -59,7 +59,7 @@ def reading(count):
             for elem in standardLengths:
                 increment = increment + 1
                 lengths.append(standardLengths.pop(0))
-                print(str(elem))
+                # print(str(elem))
                 if increment == count:
                     break
                 # continue
@@ -173,9 +173,10 @@ def query(items,sheet3,num,lengths,count):
         # Setup second query using source ID and property values 
         if not widthLength == 0 and not propertyName == "":
 
-            print(compareWidths)
+            # print(compareWidths)
             wks.cell(row=lastRow, column=4).value = lengths[0]
 
+            # intLengths = 0
             stdLengths = lengths[0]
 
             if lengths[0] == "N/A":
@@ -185,16 +186,13 @@ def query(items,sheet3,num,lengths,count):
                 stdLengths = "=" +"'" +str(intLengths)+ "'"
 
             updateQuery = ""
-            # updateQuery = "UPDATE innovator.PROPERTY SET COLUMN_WIDTH=" + "'" +str(widthLength)+ "'" + " WHERE NAME=" + "'" +propertyName+ "'" +" AND SOURCE_ID=" + "'" +ID+ "'" +" AND COLUMN_WIDTH" +stdLengths
-                # cursor.execute(queryOldLengths)
             if lengths[0] == compareWidths:
                 updateQuery = "UPDATE innovator.PROPERTY SET COLUMN_WIDTH=" + "'" +str(widthLength)+ "'" + " WHERE NAME=" + "'" +propertyName+ "'" +" AND SOURCE_ID=" + "'" +ID+ "'" +" AND COLUMN_WIDTH" +stdLengths
                 wks.cell(row=lastRow, column=6).value = updateQuery
                 sheet3.save('Width Lengths.xlsx')
                 lastRow = wks.max_row
             else:
-                # intLengths = int(lengths[0])
-                updateQuery = "UPDATE innovator.PROPERTY SET COLUMN_WIDTH=" + "'" +str(widthLength)+ "'" + " WHERE NAME=" + "'" +propertyName+ "'" +" AND SOURCE_ID=" + "'" +ID+ "'" +" AND COLUMN_WIDTH =" +"'"+str(intLengths)+"'"
+                updateQuery = "UPDATE innovator.PROPERTY SET COLUMN_WIDTH=" + "'" +str(widthLength)+ "'" + " WHERE NAME=" + "'" +propertyName+ "'" +" AND SOURCE_ID=" + "'" +ID+ "'" +" AND COLUMN_WIDTH" +str(stdLengths)
                 wks.cell(row=lastRow, column=6).value = updateQuery
                 sheet3.save('Width Lengths.xlsx')
 
