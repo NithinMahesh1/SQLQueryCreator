@@ -10,22 +10,32 @@ import xlsxwriter
 import openpyxl
 from openpyxl import load_workbook
 
+count = 0
+
 def main():
-    reading()
+    reading(count)
 
 
-def reading():
+def reading(count):
     num = 0
     path = os.getcwd() + "\Width Lengths.xlsx"
     data = pandas.read_excel(path, sheet_name='Sheet1')
+    sheet2 = pandas.read_excel(path, sheet_name='Sheet2')
 
-    sheet2 = load_workbook('Width Lengths.xlsx')
-    sheet2.create_sheet('Sheet2')
+    sheet3 = load_workbook('Width Lengths.xlsx')
+    sheet3.create_sheet('Sheet3')
+
+    standardLengths = []
+    for index, rows in sheet2.iterrows():
+        lengths = rows['Standard']
+        standardLengths.append(lengths)
 
     items = {}
+    # count = 0
     for index, row in data.iterrows():
         key = row['ItemType']
         value = row['Width']
+        # print(count)
 
         if not (pandas.isnull(value)):
             value = int(value)
@@ -39,29 +49,66 @@ def reading():
         if key == "Finish":
             num = num + 1
             boolean = False
-            query(items,sheet2, num)
+            # count = count - 1
+            count = len(items) - 1
+
+            # loop through lengths here then remove up the count from 0 to count
+            lengths = []
+            increment = 0
+            for elem in standardLengths:
+                increment = increment + 1
+                lengths.append(standardLengths.pop(0))
+                print(str(elem))
+                if increment == count:
+                    break
+                # continue
+            
+            if len(standardLengths) == 1:
+                lengths.append(standardLengths.pop(0))
+                
+            # for elem in enumerate(standardLengths):
+            #     increment = increment + 1
+            #     if increment <= count:
+            #         lengths.append(standardLengths.pop(0))
+            #         print(str(elem))
+            #         continue
+                
+
+            query(items,sheet3,num,lengths,count)
             continue
 
         concat = key, value
+        print(concat)
 
         if check1 == False and check2 == True:
             items[key] = value
             boolean = True
            
         if boolean == True:
-            items[key] = value    
+            items[key] = value
+            # count = count + 1
 
+
+# compare standard demo width output column to new output column (code already creates new column on the fly)
+
+# if standard demo column does not equal current db column then we create sql column statement
+
+# if standard demo column does equal current db column then we continue with logic
     
 
-def query(items,sheet2,num):
+def query(items,sheet3,num,lengths,count):
+
+    # standardLengths should be indexed according to the size of the itemProperty array (using the size value)
+    # compare indices to this 
+    print(lengths[0])
 
     conn = pyodbc.connect('Driver={SQL Server};'
-                      'Server=\SQLEXPRESS;'
+                      'Server=AND692557\SQLEXPRESS;'
                       'Database=12_SP11Test;'
                       'Trusted_Connection=yes;')
 
     cursor = conn.cursor()
-    count = 0
+    # count = 0
     itemProperty = []
     for key,value in items.items():
         propertyName = []
@@ -90,7 +137,7 @@ def query(items,sheet2,num):
 
         print(ID)
 
-    wks = sheet2['Sheet2']
+    wks = sheet3['Sheet3']
     lastRow = wks.max_row
 
     # Query for old width lenghts and save those before running change query
@@ -120,8 +167,8 @@ def query(items,sheet2,num):
                 if lastColumn == 1:
                     wks.cell(row=lastRow, column=1).value = itemtype
                     wks.cell(row=lastRow, column=2).value = properties
-                    wks.cell(row=lastRow, column=4).value = row
-                    sheet2.save('Width Lengths.xlsx')
+                    wks.cell(row=lastRow, column=5).value = row
+                    sheet3.save('Width Lengths.xlsx')
                     checkRowandColumn = True
                     
                 if checkRowandColumn == False:
@@ -130,8 +177,8 @@ def query(items,sheet2,num):
                         wks.cell(row=lastRow+1, column=1).value = itemtype
 
                     wks.cell(row=lastRow+1, column=2).value = properties
-                    wks.cell(row=lastRow+1, column=4).value = row
-                    sheet2.save('Width Lengths.xlsx')
+                    wks.cell(row=lastRow+1, column=5).value = row
+                    sheet3.save('Width Lengths.xlsx')
 
       
                 checkRowandColumn == False
@@ -147,16 +194,24 @@ def query(items,sheet2,num):
             # cursor.execute(queryOldLengths)
             
             wks.cell(row=lastRow, column=6).value = queryOldLengths
-            sheet2.save('Width Lengths.xlsx')
+            sheet3.save('Width Lengths.xlsx')
             lastRow = wks.max_row
             checkRowandColumn = True
 
             checkRowandColumn == False
  
     print(num)
+    # increment(num)
+    # count = 0
                
-
     items.clear()
+    lengths.clear()
+    # return count = 0
+
+
+# def increment(num):
+#     if num >= 2:
+#         return count = 0
 
 
 main()
