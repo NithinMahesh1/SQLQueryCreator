@@ -28,14 +28,16 @@ def reading(count):
     standardLengths = []
     for index, rows in sheet2.iterrows():
         lengths = rows['Standard']
-        standardLengths.append(lengths)
+        if pandas.isnull(lengths):
+            lengths = "null"
+            standardLengths.append(lengths)
+        else:
+            standardLengths.append(lengths)
 
     items = {}
-    # count = 0
     for index, row in data.iterrows():
         key = row['ItemType']
         value = row['Width']
-        # print(count)
 
         if not (pandas.isnull(value)):
             value = int(value)
@@ -49,7 +51,6 @@ def reading(count):
         if key == "Finish":
             num = num + 1
             boolean = False
-            # count = count - 1
             count = len(items) - 1
 
             # loop through lengths here then remove up the count from 0 to count
@@ -64,15 +65,8 @@ def reading(count):
                 # continue
             
             if len(standardLengths) == 1:
-                lengths.append(standardLengths.pop(0))
-                
-            # for elem in enumerate(standardLengths):
-            #     increment = increment + 1
-            #     if increment <= count:
-            #         lengths.append(standardLengths.pop(0))
-            #         print(str(elem))
-            #         continue
-                
+                lengths.append(standardLengths.pop(0))    
+            
 
             query(items,sheet3,num,lengths,count)
             continue
@@ -100,15 +94,13 @@ def query(items,sheet3,num,lengths,count):
 
     # standardLengths should be indexed according to the size of the itemProperty array (using the size value)
     # compare indices to this 
-    print(lengths[0])
 
     conn = pyodbc.connect('Driver={SQL Server};'
                       'Server=AND692557\SQLEXPRESS;'
-                      'Database=12_SP11Test;'
+                      'Database=12_SP11;'
                       'Trusted_Connection=yes;')
 
     cursor = conn.cursor()
-    # count = 0
     itemProperty = []
     for key,value in items.items():
         propertyName = []
@@ -142,6 +134,7 @@ def query(items,sheet3,num,lengths,count):
 
     # Query for old width lenghts and save those before running change query
     # SELECT COLUMN_WIDTH FROM innovator.PROPERTY WHERE name='property name' AND SOURCE_ID='the id we got'
+    compareWidths = []
     for properties in itemProperty:
         lastRow = wks.max_row  
         lastColumn = wks.max_column
@@ -162,12 +155,16 @@ def query(items,sheet3,num,lengths,count):
                 if str(row[1]) == "None":
                     row = "null"
                 else:
-                    row = int(row[1])         
+                    row = int(row[1])     
+
+                compareWidths = row
                 
                 if lastColumn == 1:
                     wks.cell(row=lastRow, column=1).value = itemtype
                     wks.cell(row=lastRow, column=2).value = properties
                     wks.cell(row=lastRow, column=5).value = row
+                    # wks.cell(row=lastRow, column=4).value = lengths[0]
+                    # lengths.pop(0)
                     sheet3.save('Width Lengths.xlsx')
                     checkRowandColumn = True
                     
@@ -178,6 +175,8 @@ def query(items,sheet3,num,lengths,count):
 
                     wks.cell(row=lastRow+1, column=2).value = properties
                     wks.cell(row=lastRow+1, column=5).value = row
+                    # wks.cell(row=lastRow, column=4).value = lengths[0]
+                    # lengths.pop(0)
                     sheet3.save('Width Lengths.xlsx')
 
       
@@ -186,32 +185,41 @@ def query(items,sheet3,num,lengths,count):
         widthLength = 0
         if isinstance(properties, int):
             widthLength = properties
+            # wks.cell(row=lastRow, column=4).value = lengths[0]
+            # lengths.pop(0)
         
         # UPDATE innovator.PROPERTY SET COLUMN_WIDTH='new int width' WHERE NAME='property name' AND SOURCE_ID='ID variable'
         # Setup second query using source ID and property values 
         if not widthLength == 0 and not propertyName == "":
-            queryOldLengths = "UPDATE innovator.PROPERTY SET COLUMN_WIDTH=" + "'" +str(widthLength)+ "'" + " WHERE NAME=" + "'" +propertyName+ "'" +" AND SOURCE_ID=" + "'" +ID+ "'"
-            # cursor.execute(queryOldLengths)
-            
-            wks.cell(row=lastRow, column=6).value = queryOldLengths
-            sheet3.save('Width Lengths.xlsx')
-            lastRow = wks.max_row
-            checkRowandColumn = True
 
+            print(compareWidths)
+            wks.cell(row=lastRow, column=4).value = lengths[0]
+
+            
+            updateQuery = "UPDATE innovator.PROPERTY SET COLUMN_WIDTH=" + "'" +str(widthLength)+ "'" + " WHERE NAME=" + "'" +propertyName+ "'" +" AND SOURCE_ID=" + "'" +ID+ "'"
+                # cursor.execute(queryOldLengths)
+            if lengths[0] == compareWidths:
+                # wks.cell(row=lastRow, column=4).value = lengths[0]
+                # lengths.pop(0)
+                wks.cell(row=lastRow, column=6).value = updateQuery
+                sheet3.save('Width Lengths.xlsx')
+                lastRow = wks.max_row
+                # checkRowandColumn = True
+            else:
+                wks.cell(row=lastRow, column=6).value = "Customer has custom widths"
+                wks.cell(row=lastRow, column=7).value = updateQuery
+                sheet3.save('Width Lengths.xlsx')
+
+            checkRowandColumn = True
+            lengths.pop(0)
+            # compareWidths.pop(0)
             checkRowandColumn == False
  
     print(num)
-    # increment(num)
-    # count = 0
                
     items.clear()
-    lengths.clear()
-    # return count = 0
-
-
-# def increment(num):
-#     if num >= 2:
-#         return count = 0
+    # compareWidths.clear()
+    # lengths.clear()
 
 
 main()
